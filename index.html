@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Hosting Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 48px 40px;
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 1rem;
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(46, 213, 115, 0.2);
+            border: 1px solid rgba(46, 213, 115, 0.5);
+            color: #2ed573;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-weight: 600;
+            margin-bottom: 28px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2ed573;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .info {
+            font-size: 0.875rem;
+            opacity: 0.75;
+            font-family: "SF Mono", Consolas, monospace;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+        }
+
+        .info span {
+            display: block;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Welcome 👋</h1>
+        <p>If you can see this page, your hosting is working correctly on the VPS.</p>
+
+        <div class="status">
+            <span class="dot"></span>
+            Server Online
+        </div>
+
+        <div class="info">
+            <span>Server Time: <strong id="time"></strong></span>
+            <span>Host: <strong id="host"></strong></span>
+            <span>Loaded: <strong id="loaded"></strong></span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("time").textContent = new Date().toLocaleString();
+        document.getElementById("host").textContent = window.location.host || "unknown";
+        document.getElementById("loaded").textContent = document.lastModified;
+    </script>
+</body>
+</html>
