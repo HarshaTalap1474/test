@@ -3,158 +3,512 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Status - Health Check</title>
+    <meta name="description" content="Live status for the WeBuildZ health check API.">
+    <title>WeBuildZ — System Status</title>
     <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f9fafb;
+            --border: #e5e7eb;
+            --text: #111827;
+            --text-2: #4b5563;
+            --text-3: #6b7280;
+            --ok: #15803d;
+            --ok-soft: #dcfce7;
+            --down: #b91c1c;
+            --down-soft: #fee2e2;
+            --accent: #2563eb;
+            --accent-soft: #eff6ff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1117;
+                --surface: #161a23;
+                --border: #262b38;
+                --text: #f3f4f6;
+                --text-2: #9ca3af;
+                --text-3: #6b7280;
+                --ok: #4ade80;
+                --ok-soft: rgba(74, 222, 128, 0.12);
+                --down: #f87171;
+                --down-soft: rgba(248, 113, 113, 0.12);
+                --accent: #60a5fa;
+                --accent-soft: rgba(96, 165, 250, 0.12);
+            }
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html { color-scheme: light dark; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Top bar ---------- */
+        .topbar {
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+
+        .topbar-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .wordmark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 650;
+            font-size: 15px;
+            letter-spacing: -0.01em;
+        }
+
+        .wordmark-mark {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: var(--accent);
             color: #fff;
-            padding: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 48px 40px;
-            text-align: center;
-            max-width: 520px;
+        .wordmark span:nth-child(2) { color: var(--text-3); font-weight: 500; }
+
+        .clock {
+            font-size: 13px;
+            color: var(--text-3);
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        /* ---------- Main ---------- */
+        main {
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px 24px;
+            flex: 1;
         }
 
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 12px;
+        /* ---------- Hero status ---------- */
+        .hero {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding-bottom: 32px;
         }
 
-        p {
-            font-size: 1rem;
-            line-height: 1.6;
-            opacity: 0.9;
-            margin-bottom: 24px;
-        }
-
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(46, 213, 115, 0.2);
-            border: 1px solid rgba(46, 213, 115, 0.5);
-            color: #2ed573;
-            padding: 10px 20px;
-            border-radius: 999px;
-            font-weight: 600;
-            margin-bottom: 28px;
-            transition: background 0.3s, border-color 0.3s, color 0.3s;
-        }
-
-        .status.offline {
-            background: rgba(255, 71, 87, 0.2);
-            border-color: rgba(255, 71, 87, 0.5);
-            color: #ff4757;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
+        .hero-dot {
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background: #2ed573;
-            animation: pulse 1.5s infinite;
+            margin-top: 9px;
+            background: var(--text-3);
+            flex-shrink: 0;
+            transition: background 0.3s;
         }
 
-        .status.offline .dot {
-            background: #ff4757;
+        .hero.is-ok .hero-dot { background: var(--ok); }
+        .hero.is-down .hero-dot { background: var(--down); }
+
+        .hero.is-ok .hero-dot { box-shadow: 0 0 0 3px var(--ok-soft); }
+        .hero.is-down .hero-dot { box-shadow: 0 0 0 3px var(--down-soft); }
+
+        .hero h1 {
+            font-size: 26px;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            line-height: 1.3;
+            transition: color 0.3s;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
+        .hero.is-ok h1 { color: var(--ok); }
+        .hero.is-down h1 { color: var(--down); }
+
+        .hero-meta {
+            font-size: 14px;
+            color: var(--text-3);
+            margin-top: 4px;
         }
 
-        .info {
-            font-size: 0.875rem;
-            opacity: 0.75;
-            font-family: "SF Mono", Consolas, monospace;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 16px;
-            text-align: left;
+        .hero-meta .sep {
+            margin: 0 7px;
+            color: var(--border);
         }
 
-        .info span {
-            display: block;
-            margin: 4px 0;
+        /* ---------- Sections ---------- */
+        section { margin-bottom: 32px; }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-3);
+            margin-bottom: 10px;
+        }
+
+        /* Component rows */
+        .components {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .component-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: var(--bg);
+            transition: background 0.15s;
+        }
+
+        .component-row + .component-row { border-top: 1px solid var(--border); }
+        .component-row:hover { background: var(--surface); }
+
+        .component-name {
+            font-weight: 550;
+            min-width: 160px;
+        }
+
+        .component-desc {
+            font-size: 13px;
+            color: var(--text-3);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .component-state {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 550;
+            color: var(--text-3);
+            white-space: nowrap;
+        }
+
+        .component-state::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-3);
+            transition: background 0.3s;
+        }
+
+        .component-state.ok { color: var(--ok); }
+        .component-state.ok::before { background: var(--ok); }
+        .component-state.down { color: var(--down); }
+        .component-state.down::before { background: var(--down); }
+
+        /* Metrics */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .metric {
+            padding: 16px 18px;
+            background: var(--bg);
+        }
+
+        .metric + .metric { border-left: 1px solid var(--border); }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-3);
+            margin-bottom: 3px;
+        }
+
+        .metric-value {
+            font-size: 17px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+        }
+
+        /* ---------- Response block ---------- */
+        .response-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .response-head .section-title { margin-bottom: 0; }
+
+        .copy-btn {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 550;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border: none;
+            border-radius: 7px;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .copy-btn:hover { background: color-mix(in srgb, var(--accent-soft), var(--accent) 10%); }
+        .copy-btn:active { transform: translateY(1px); }
+        .copy-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        pre.json {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+            font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-2);
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        /* ---------- Footer ---------- */
+        footer {
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-3);
+            flex-wrap: wrap;
+        }
+
+        footer a {
+            color: var(--text-2);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        footer a:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 640px) {
+            main { padding-top: 32px; }
+            .hero h1 { font-size: 21px; }
+            .metrics { grid-template-columns: 1fr; }
+            .metric + .metric { border-left: none; border-top: 1px solid var(--border); }
+            .component-name { min-width: 0; }
+            .component-row { flex-wrap: wrap; }
+            .component-desc { flex-basis: 100%; order: 3; white-space: normal; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition-duration: 0.01ms !important; }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Welcome 👋 To WeBuildZ Ecosystem</h1>
-        <p>If you can see this page, your hosting is working correctly on the VPS.</p>
-
-        <div class="status" id="status-badge">
-            <span class="dot"></span>
-            <span id="status-text">Checking...</span>
-        </div>
-
-        <div class="info">
-            <span>Server Time: <strong id="time">-</strong></span>
-            <span>Host: <strong id="host">-</strong></span>
-            <span>Uptime: <strong id="uptime">-</strong></span>
-            <span>API: <strong>/api/health</strong></span>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="wordmark">
+                <div class="wordmark-mark">W</div>
+                <span>WeBuildZ</span>
+                <span>Status</span>
+            </div>
+            <div class="clock" id="clock">—</div>
         </div>
     </div>
 
+    <main>
+        <div class="hero" id="hero" aria-live="polite">
+            <div class="hero-dot"></div>
+            <div>
+                <h1 id="hero-title">Checking status…</h1>
+                <div class="hero-meta">
+                    <span id="hero-uptime">Uptime —</span>
+                    <span class="sep">·</span>
+                    <span>auto-refreshes every 5s</span>
+                </div>
+            </div>
+        </div>
+
+        <section>
+            <div class="section-title">Components</div>
+            <div class="components">
+                <div class="component-row">
+                    <div class="component-name">Health API</div>
+                    <div class="component-desc">GET /api/health — returns status, uptime, timestamp</div>
+                    <div class="component-state" id="state-api">Checking…</div>
+                </div>
+                <div class="component-row">
+                    <div class="component-name">Status Page</div>
+                    <div class="component-desc">This web page</div>
+                    <div class="component-state ok">Operational</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-title">Metrics</div>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">Uptime</div>
+                    <div class="metric-value" id="metric-uptime">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Response time</div>
+                    <div class="metric-value" id="metric-rtt">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Last check</div>
+                    <div class="metric-value" id="metric-last">—</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="response-head">
+                <div class="section-title">Latest response</div>
+                <button class="copy-btn" id="copy-btn" type="button">Copy JSON</button>
+            </div>
+            <pre class="json" id="json">{ "status": "…", "uptime": …, "timestamp": "…" }</pre>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <span>Served by Node.js · Next.js · exposed via Cloudflare Tunnel</span>
+            <a href="/api/health">/api/health →</a>
+        </div>
+    </footer>
+
     <script>
-        const badge = document.getElementById("status-badge");
-        const statusText = document.getElementById("status-text");
-        const timeEl = document.getElementById("time");
-        const hostEl = document.getElementById("host");
-        const uptimeEl = document.getElementById("uptime");
+        const hero = document.getElementById("hero");
+        const heroTitle = document.getElementById("hero-title");
+        const heroUptime = document.getElementById("hero-uptime");
+        const stateApi = document.getElementById("state-api");
+        const clockEl = document.getElementById("clock");
+        const metricUptime = document.getElementById("metric-uptime");
+        const metricRtt = document.getElementById("metric-rtt");
+        const metricLast = document.getElementById("metric-last");
+        const jsonEl = document.getElementById("json");
+        const copyBtn = document.getElementById("copy-btn");
 
-        hostEl.textContent = window.location.host || "unknown";
-
-        function formatUptime(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            const parts = [];
-            if (h) parts.push(h + "h");
-            if (m) parts.push(m + "m");
-            parts.push(s + "s");
-            return parts.join(" ");
+        function formatUptime(s) {
+            const d = Math.floor(s / 86400);
+            const h = Math.floor((s % 86400) / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = s % 60;
+            if (d) return d + "d " + h + "h " + m + "m";
+            if (h) return h + "h " + m + "m " + sec + "s";
+            if (m) return m + "m " + sec + "s";
+            return sec + "s";
         }
 
-        async function pollHealth() {
+        function updateClock() {
+            clockEl.textContent = new Date().toLocaleString([], {
+                weekday: "short", month: "short", day: "numeric",
+                hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+            });
+        }
+
+        let lastPayload = "";
+
+        async function poll() {
+            const started = performance.now();
             try {
                 const res = await fetch("/api/health", { cache: "no-store" });
-                if (!res.ok) throw new Error(res.status);
+                if (!res.ok) throw new Error("HTTP " + res.status);
                 const data = await res.json();
+                const rtt = Math.max(1, Math.round(performance.now() - started));
 
-                badge.classList.remove("offline");
-                statusText.textContent = data.status === "ok" ? "Server Online" : data.status;
-                timeEl.textContent = new Date(data.timestamp).toLocaleString();
-                uptimeEl.textContent = formatUptime(data.uptime);
+                hero.classList.add("is-ok");
+                hero.classList.remove("is-down");
+                heroTitle.textContent = "All systems operational";
+                heroUptime.textContent = "Uptime " + formatUptime(data.uptime);
+
+                stateApi.textContent = "Operational · " + rtt + "ms";
+                stateApi.classList.add("ok");
+                stateApi.classList.remove("down");
+
+                metricUptime.textContent = formatUptime(data.uptime);
+                metricRtt.textContent = rtt + "ms";
+                metricLast.textContent = new Date(data.timestamp).toLocaleTimeString([], { hour12: false });
+
+                lastPayload = JSON.stringify(data, null, 2);
+                jsonEl.textContent = lastPayload;
             } catch (err) {
-                badge.classList.add("offline");
-                statusText.textContent = "Server Offline";
+                hero.classList.add("is-down");
+                hero.classList.remove("is-ok");
+                heroTitle.textContent = "Health API is down";
+
+                stateApi.textContent = "Down — " + err.message;
+                stateApi.classList.add("down");
+                stateApi.classList.remove("ok");
             }
         }
 
-        pollHealth();
-        setInterval(pollHealth, 5000);
+        copyBtn.addEventListener("click", async () => {
+            if (!lastPayload) return;
+            const prev = copyBtn.textContent;
+            try {
+                await navigator.clipboard.writeText(lastPayload);
+            } catch (e) {
+                const ta = document.createElement("textarea");
+                ta.value = lastPayload;
+                ta.style.position = "fixed";
+                ta.style.opacity = "0";
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+            }
+            copyBtn.textContent = "Copied ✓";
+            copyBtn.disabled = true;
+            setTimeout(() => {
+                copyBtn.textContent = prev;
+                copyBtn.disabled = false;
+            }, 1500);
+        });
+
+        updateClock();
+        setInterval(updateClock, 1000);
+        poll();
+        setInterval(poll, 5000);
     </script>
 </body>
 </html>
